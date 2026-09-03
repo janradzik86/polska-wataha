@@ -150,6 +150,15 @@ export default defineConfig(({ command, isPreview }) => ({
     host: "0.0.0.0",
     port: 8080,
     strictPort: true,
+    watch: {
+      ignored: [
+        "**/.gradle-home/**",
+        "**/.gradle/**",
+        "**/.gradle-dist/**",
+        "**/.android-sdk/**",
+        "**/android/app/build/**",
+      ],
+    },
   },
   preview: {
     host: "127.0.0.1",

@@ -1,0 +1,7 @@
+<resources>
+    <color name="siatka_bg">#0C0808</color>
+    <color name="siatka_fg">#F6F3EE</color>
+    <color name="siatka_steel">#C8102E</color>
+    <color name="flag_white">#F7F5F2</color>
+    <color name="flag_red">#C8102E</color>
+</resources>

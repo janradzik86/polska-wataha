@@ -1,0 +1,8 @@
+<resources>
+    <style name="Theme.Siatka" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/siatka_bg</item>
+        <item name="android:navigationBarColor">@color/siatka_bg</item>
+        <item name="android:windowBackground">@color/siatka_bg</item>
+        <item name="android:colorPrimary">@color/siatka_steel</item>
+    </style>
+</resources>

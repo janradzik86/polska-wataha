@@ -25,7 +25,7 @@ export const useSiatka = create<SiatkaState>()(
     (set) => ({
       crisis: false,
       setCrisis: (crisis) => set({ crisis }),
-      online: typeof navigator === "undefined" ? true : navigator.onLine,
+      online: true,
       setOnline: (online) => set({ online }),
       simulateOffline: false,
       setSimulateOffline: (simulateOffline) => set({ simulateOffline }),
@@ -43,7 +43,7 @@ export const useSiatka = create<SiatkaState>()(
         })),
       clearQueue: () => set({ queue: [] }),
     }),
-    { name: "siatka-local" },
+    { name: "siatka-local", partialize: (s) => ({ queue: s.queue, simulateOffline: s.simulateOffline }) },
   ),
 );
 

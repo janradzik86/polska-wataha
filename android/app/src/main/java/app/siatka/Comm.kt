@@ -1,6 +1,7 @@
 package app.siatka
 
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -19,34 +20,34 @@ object Comm {
 
     fun adapters(ctx: Context, simulateOffline: Boolean): List<AdapterStatus> {
         val net = online(ctx) && !simulateOffline
-        val bt = try { BluetoothAdapter.getDefaultAdapter() } catch (_: SecurityException) { null }
-        val btState = when {
-            bt == null -> "ready"
-            !bt.isEnabled -> "ready"
-            else -> "ready"
-        }
+        val bt = try {
+            (ctx.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
+        } catch (_: Exception) { null }
+        val btOn = try { bt?.isEnabled == true } catch (_: SecurityException) { false }
+        val (loraHealth, loraDetail) = LoraRadio.health()
         return listOf(
             AdapterStatus(
                 "internet", "InternetAdapter", "IP / HTTPS",
                 if (net) "up" else "down",
                 if (net) "Kanał IP aktywny." else "Brak IP. Ruch w kolejce store-and-forward.",
-                "V0.1 — działający",
+                "V0.4 — działający",
             ),
             AdapterStatus(
-                "bluetooth", "BluetoothAdapter", "BLE / Classic", btState,
-                if (bt == null) "Adapter przygotowany. Brak uprawnienia lub radia — nie udajemy połączenia."
-                else "Radio BT wykryte. Skan i ramki testowe gotowe (V0.3).",
-                "V0.3 — przygotowany do testów",
+                "bluetooth", "BluetoothAdapter", "BLE 5",
+                if (btOn) "up" else "ready",
+                if (btOn) "Radio BT włączone — skan bramki Heltec V4."
+                else "Włącz Bluetooth, żeby sparować moduł LoRa.",
+                "V0.4 — łącze do Heltec V4",
             ),
             AdapterStatus(
                 "wifi_direct", "WifiDirectAdapter", "Wi-Fi P2P", "ready",
-                "Negocjacja grupy P2P zaimplementowana jako warstwa. Czeka na testy urządzenie–urządzenie.",
-                "V0.3 — przygotowany do testów",
+                "Warstwa P2P gotowa. LoRa idzie przez BLE, nie przez Wi-Fi Direct.",
+                "V0.3 — przygotowany",
             ),
             AdapterStatus(
-                "lora", "LoRaAdapter", "LoRa / SX126x", "hardware_missing",
-                "Brak modułu LoRa w tym telefonie. Adapter nie udaje transmisji radiowej.",
-                "V0.4 — warstwa pod przyszły sprzęt",
+                "lora", "LoRaAdapter", "SX1262 · EU868",
+                loraHealth, loraDetail,
+                "V0.4 — Heltec WiFi LoRa 32 V4",
             ),
         )
     }

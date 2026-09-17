@@ -177,14 +177,33 @@ private fun NavItem(label: String, icon: ImageVector, selected: Boolean, onClick
 
 @Composable
 private fun ConnectionStrip(activity: MainActivity, simulate: Boolean) {
+    var loraTick by remember { mutableIntStateOf(0) }
+    DisposableEffect(Unit) {
+        val cb: () -> Unit = { loraTick += 1 }
+        LoraRadio.onChange(cb)
+        onDispose { LoraRadio.removeChange(cb) }
+    }
     val online = Comm.online(activity) && !simulate
+    val lora = LoraRadio.phase == LoraRadio.Phase.Linked
+    val label = when {
+        lora && online -> "IP + LoRa EU868 · ${LoraRadio.deviceName ?: "Heltec V4"}"
+        lora -> "LoRa EU868 · bez IP · ${LoraRadio.deviceName ?: "Heltec V4"}"
+        online -> "Sieć IP · InternetAdapter aktywny"
+        else -> "Tryb offline · kolejka store-and-forward"
+    }
     Row(
-        Modifier.fillMaxWidth().background(if (online) SurfaceC else Elevated).padding(horizontal = 16.dp, vertical = 8.dp),
+        Modifier.fillMaxWidth().background(if (online || lora) SurfaceC else Elevated).padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Icon(if (online) Icons.Outlined.Wifi else Icons.Outlined.WifiOff, null, tint = if (online) Ok else Warn, modifier = Modifier.size(14.dp))
+        Icon(
+            if (lora) Icons.Outlined.Sensors else if (online) Icons.Outlined.Wifi else Icons.Outlined.WifiOff,
+            null,
+            tint = if (lora || online) Ok else Warn,
+            modifier = Modifier.size(14.dp),
+        )
         Spacer(Modifier.width(8.dp))
-        Text(if (online) "Sieć IP · InternetAdapter aktywny" else "Tryb offline · kolejka store-and-forward", color = if (online) Muted else Warn, fontSize = 11.sp)
+        Text(label, color = if (online || lora) Muted else Warn, fontSize = 11.sp)
+        if (loraTick < 0) Text("")
     }
 }
 
@@ -206,7 +225,7 @@ private fun AuthScreen(db: SiatkaDb, register: Boolean, onIn: () -> Unit, toggle
         Spacer(Modifier.height(16.dp))
         Text("POLSKA WATAHA", color = Primary, letterSpacing = 4.sp, fontSize = 12.sp)
         Text("Polska Wataha", color = Fg, fontSize = 40.sp, fontWeight = FontWeight.SemiBold)
-        Text("Czarne Wilki Prawdy", color = Muted, modifier = Modifier.padding(top = 8.dp, bottom = 24.dp))
+        Text("Zaloguj się własnym kontem. Hasła są hashowane (PBKDF2), po 5 błędach blokada 5 min.", color = Muted, modifier = Modifier.padding(top = 8.dp, bottom = 24.dp))
         if (register) Field("Imię", name) { name = it }
         Field("Email", email) { email = it }
         Field("Hasło", pass, true) { pass = it }
@@ -221,15 +240,17 @@ private fun AuthScreen(db: SiatkaDb, register: Boolean, onIn: () -> Unit, toggle
                 } else {
                     if (db.login(email, pass) == null) err = "Błędny email lub hasło" else onIn()
                 }
-            } catch (e: Exception) { err = e.message }
+            } catch (e: SiatkaDb.AuthException) { err = e.message }
+            catch (e: Exception) { err = e.message }
         }
         Spacer(Modifier.height(8.dp))
-        SecondaryBtn("Wejdź na konto demo") {
-            db.login("demo@siatka.app", "siatka-demo-2026")
-            onIn()
+        SecondaryBtn("Konto testowe (offline)") {
+            try {
+                db.login("demo@siatka.app", "siatka-demo-2026")
+                onIn()
+            } catch (e: Exception) { err = e.message }
         }
-        Text("demo@siatka.app · siatka-demo-2026", color = Muted, fontSize = 11.sp, modifier = Modifier.padding(top = 8.dp).clickable { toggle() })
-        Text(if (register) "Masz konto? Zaloguj" else "Utwórz konto testowe", color = Muted, modifier = Modifier.padding(top = 16.dp).clickable { toggle() })
+        Text(if (register) "Masz konto? Zaloguj" else "Utwórz własne konto", color = Muted, modifier = Modifier.padding(top = 16.dp).clickable { toggle() })
         }
     }
 }
@@ -489,7 +510,7 @@ private fun ProfileScreen(db: SiatkaDb, me: Profile, onOut: () -> Unit, go: (Scr
         Text("Odznaki", color = Fg, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
         db.badges(fresh.id).forEach { Text("· ${it.title} — ${it.description}", color = Muted, fontSize = 13.sp) }
         SecondaryBtn("Sąsiedzi") { go(Screen.People) }
-        SecondaryBtn("Mesh Lab") { go(Screen.Mesh) }
+        SecondaryBtn("Radio LoRa · Heltec V4") { go(Screen.Mesh) }
         SecondaryBtn("Status i offline") { go(Screen.Status) }
         TextButton(onClick = onOut) { Text("Wyloguj", color = Danger) }
     }
@@ -500,11 +521,70 @@ private fun MeshScreen(db: SiatkaDb, onChange: () -> Unit) {
     var from by remember { mutableStateOf("NODE_A") }
     var to by remember { mutableStateOf("NODE_D") }
     var rev by remember { mutableIntStateOf(0) }
+    var pin by remember { mutableStateOf("") }
+    var tx by remember { mutableStateOf("WATAHA ping") }
+    var radioTick by remember { mutableIntStateOf(0) }
+    val activity = SiatkaApp.instance
+    val btPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ok ->
+        if (ok.values.all { it }) LoraRadio.startScan(activity)
+    }
+    DisposableEffect(Unit) {
+        val cb: () -> Unit = { radioTick += 1; onChange() }
+        LoraRadio.onChange(cb)
+        onDispose { LoraRadio.removeChange(cb) }
+    }
     val nodes = remember(rev) { db.nodes() }
     val hop = Comm.route(nodes, from, to)
+    val found = LoraRadio.found.toList()
+    val log = LoraRadio.log.toList()
     Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Label("Mesh Lab"); Title("Symulator węzłów")
-        Text("A → B → C → D. Wyłącz NODE B, żeby zobaczyć rerouting. LoRa na D nie udaje radia.", color = Muted, fontSize = 13.sp)
+        Label("V0.4 · SX1262"); Title("Heltec LoRa 32 V4")
+        Text(
+            "WiFi LoRa 32 V4 · pasmo HF 863–928 MHz (EU868). Wgraj firmware Watahy, na OLED pojawi się PIN. Skanuj BLE i sparuj.",
+            color = Muted, fontSize = 13.sp,
+        )
+        CardBox({}) {
+            Text(LoraRadio.phase.name, color = if (LoraRadio.phase == LoraRadio.Phase.Linked) Ok else Fg, fontWeight = FontWeight.SemiBold)
+            Text(LoraRadio.detail, color = Muted, fontSize = 13.sp)
+            LoraRadio.lastRssi?.let { Text("RSSI $it dBm", color = Muted, fontSize = 12.sp) }
+        }
+        PrimaryBtn("Skanuj bramkę BLE") {
+            val perms = if (Build.VERSION.SDK_INT >= 31)
+                arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
+            else arrayOf(Manifest.permission.BLUETOOTH, Manifest.permission.ACCESS_FINE_LOCATION)
+            btPerm.launch(perms)
+        }
+        found.forEach { d ->
+            CardBox({
+                if (pin.length == 6) {
+                    LoraRadio.connect(activity, d.address, pin)
+                }
+            }) {
+                Text(d.name, color = Fg, fontWeight = FontWeight.SemiBold)
+                Text("${d.address} · ${d.rssi} dBm", color = Muted, fontSize = 12.sp)
+                Text(if (pin.length == 6) "Dotknij, żeby wysłać PIN do weryfikacji" else "Najpierw wpisz 6-cyfrowy PIN z OLED", color = Primary, fontSize = 12.sp)
+            }
+        }
+        OutlinedField(pin, "PIN z wyświetlacza OLED") { pin = it.filter { ch -> ch.isDigit() }.take(6) }
+        if (LoraRadio.phase == LoraRadio.Phase.Linked) {
+            LaunchedEffect(LoraRadio.deviceAddress) {
+                val addr = LoraRadio.deviceAddress ?: return@LaunchedEffect
+                db.rememberLora(addr, LoraRadio.deviceName ?: "Heltec V4")
+            }
+            OutlinedField(tx, "Ramka LoRa") { tx = it }
+            PrimaryBtn("Wyślij przez SX1262") {
+                val ok = LoraRadio.sendText(tx)
+                if (!ok) db.enqueue("lora.hold", tx)
+                radioTick++
+            }
+            SecondaryBtn("Rozłącz") { LoraRadio.disconnect(); radioTick++ }
+        }
+        Title("Dziennik radia")
+        if (log.isEmpty()) Text("Brak ramek. Po sparowaniu zobaczysz RX/TX.", color = Muted, fontSize = 13.sp)
+        log.take(12).forEach { Text(it, color = Muted, fontSize = 11.sp) }
+
+        Label("Mesh"); Title("Symulator węzłów")
+        Text("A → B → C → D. NODE D to Heltec V4. Wyłącz B, żeby zobaczyć rerouting.", color = Muted, fontSize = 13.sp)
         nodes.forEach { n ->
             CardBox({}) {
                 Text(n.id.replace("_", " "), color = Fg, fontWeight = FontWeight.SemiBold)
@@ -516,7 +596,6 @@ private fun MeshScreen(db: SiatkaDb, onChange: () -> Unit) {
                 }
             }
         }
-        Text("From $from → To $to", color = Muted)
         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             listOf("NODE_A", "NODE_B", "NODE_C", "NODE_D").forEach { id ->
                 FilterChip(from == id, id.takeLast(1)) { from = id }
@@ -533,6 +612,7 @@ private fun MeshScreen(db: SiatkaDb, onChange: () -> Unit) {
             hop.reason?.let { Text(it, color = Warn, fontSize = 12.sp) }
         }
         SecondaryBtn("Zasymuluj awarię NODE B") { db.setNode("NODE_B", "down"); rev++; onChange() }
+        if (radioTick < 0) Text("")
     }
 }
 
@@ -553,11 +633,12 @@ private fun StatusScreen(db: SiatkaDb, activity: MainActivity, simulate: Boolean
                 Text(a.stage, color = Muted, fontSize = 11.sp)
             }
         }
-        SecondaryBtn("Test Bluetooth (uprawnienie)") {
+        SecondaryBtn("Skanuj Heltec V4 (Bluetooth)") {
             val perms = if (Build.VERSION.SDK_INT >= 31)
                 arrayOf(Manifest.permission.BLUETOOTH_CONNECT, Manifest.permission.BLUETOOTH_SCAN)
-            else arrayOf(Manifest.permission.BLUETOOTH)
+            else arrayOf(Manifest.permission.BLUETOOTH, Manifest.permission.ACCESS_FINE_LOCATION)
             btPerm.launch(perms)
+            LoraRadio.startScan(activity)
         }
         Title("Kolejka")
         Text("${q.count { !it.synced }} oczekujących, ${q.count { it.synced }} zsynchronizowanych", color = Muted, fontSize = 13.sp)
@@ -573,9 +654,12 @@ private fun CrisisScreen(db: SiatkaDb, me: Profile, activity: MainActivity, onCl
     val notifPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
     val locPerm = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { ok ->
         val loc = if (ok.values.any { it }) lastLocation(activity) else null
-        db.addCrisis(me.id, "location", note.ifBlank { "Lokalizacja ${loc?.first}, ${loc?.second}" }, loc?.first, loc?.second)
-        notify(activity, "crisis", "Kryzys", "Wysłano lokalizację")
-        sent = "Lokalizacja"
+        val body = note.ifBlank { "Lokalizacja ${loc?.first}, ${loc?.second}" }
+        db.addCrisis(me.id, "location", body, loc?.first, loc?.second)
+        val radio = LoraRadio.sendCrisis("location", body)
+        if (!radio) db.enqueue("crisis.location", body)
+        notify(activity, "crisis", "Kryzys", if (radio) "Lokalizacja przez LoRa" else "Wysłano lokalizację")
+        sent = if (radio) "Lokalizacja · LoRa" else "Lokalizacja · kolejka"
     }
     Column(Modifier.fillMaxSize().background(Bg).verticalScroll(rememberScrollState())) {
         FlagStripe()
@@ -590,19 +674,28 @@ private fun CrisisScreen(db: SiatkaDb, me: Profile, activity: MainActivity, onCl
         CrisisBtn("Potrzebuję pomocy") {
             askNotif(activity, notifPerm)
             val loc = lastLocation(activity)
-            db.addCrisis(me.id, "need_help", note.ifBlank { "Potrzebuję pomocy" }, loc?.first, loc?.second)
-            notify(activity, "crisis", "Kryzys", "Zgłoszono potrzebę pomocy")
-            sent = "Potrzebuję pomocy"
+            val body = note.ifBlank { "Potrzebuję pomocy" }
+            db.addCrisis(me.id, "need_help", body, loc?.first, loc?.second)
+            val radio = LoraRadio.sendCrisis("need_help", body)
+            if (!radio) db.enqueue("crisis.need_help", body)
+            notify(activity, "crisis", "Kryzys", if (radio) "Wysłano przez LoRa" else "W kolejce — brak radia")
+            sent = if (radio) "Potrzebuję pomocy · LoRa" else "Potrzebuję pomocy · kolejka"
         }
         CrisisBtn("Mogę pomóc") {
-            db.addCrisis(me.id, "can_help", note.ifBlank { "Mogę pomóc" }, null, null)
-            notify(activity, "help", "Pomoc", "Zadeklarowano pomoc")
-            sent = "Mogę pomóc"
+            val body = note.ifBlank { "Mogę pomóc" }
+            db.addCrisis(me.id, "can_help", body, null, null)
+            val radio = LoraRadio.sendCrisis("can_help", body)
+            if (!radio) db.enqueue("crisis.can_help", body)
+            notify(activity, "help", "Pomoc", if (radio) "Zadeklarowano przez LoRa" else "W kolejce")
+            sent = if (radio) "Mogę pomóc · LoRa" else "Mogę pomóc · kolejka"
         }
         CrisisBtn("Komunikat") {
-            db.addCrisis(me.id, "broadcast", note.ifBlank { "Komunikat sieci Polska Wataha" }, null, null)
-            notify(activity, "crisis", "Komunikat", note.ifBlank { "Komunikat" })
-            sent = "Komunikat"
+            val body = note.ifBlank { "Komunikat sieci Polska Wataha" }
+            db.addCrisis(me.id, "broadcast", body, null, null)
+            val radio = LoraRadio.sendCrisis("broadcast", body)
+            if (!radio) db.enqueue("crisis.broadcast", body)
+            notify(activity, "crisis", "Komunikat", if (radio) "Nadano LoRa" else body)
+            sent = if (radio) "Komunikat · LoRa" else "Komunikat · kolejka"
         }
         CrisisBtn("Moja lokalizacja") {
             locPerm.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))

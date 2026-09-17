@@ -14,6 +14,7 @@ import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DownloadRouteImport } from './routes/download'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LoraRouteImport } from './routes/lora'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as MeshRouteImport } from './routes/mesh'
 import { Route as MessagesRouteImport } from './routes/messages'
@@ -50,6 +51,11 @@ const HelpRoute = HelpRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoraRoute = LoraRouteImport.update({
+  id: '/lora',
+  path: '/lora',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MapRoute = MapRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/download': typeof DownloadRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/lora': typeof LoraRoute
   '/map': typeof MapRoute
   '/mesh': typeof MeshRoute
   '/messages': typeof MessagesRouteWithChildren
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/download': typeof DownloadRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/lora': typeof LoraRoute
   '/map': typeof MapRoute
   '/mesh': typeof MeshRoute
   '/messages': typeof MessagesRouteWithChildren
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/download': typeof DownloadRoute
   '/help': typeof HelpRoute
   '/login': typeof LoginRoute
+  '/lora': typeof LoraRoute
   '/map': typeof MapRoute
   '/mesh': typeof MeshRoute
   '/messages': typeof MessagesRouteWithChildren
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/download'
     | '/help'
     | '/login'
+    | '/lora'
     | '/map'
     | '/mesh'
     | '/messages'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/download'
     | '/help'
     | '/login'
+    | '/lora'
     | '/map'
     | '/mesh'
     | '/messages'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/download'
     | '/help'
     | '/login'
+    | '/lora'
     | '/map'
     | '/mesh'
     | '/messages'
@@ -237,6 +249,7 @@ export interface RootRouteChildren {
   DownloadRoute: typeof DownloadRoute
   HelpRoute: typeof HelpRoute
   LoginRoute: typeof LoginRoute
+  LoraRoute: typeof LoraRoute
   MapRoute: typeof MapRoute
   MeshRoute: typeof MeshRoute
   MessagesRoute: typeof MessagesRouteWithChildren
@@ -284,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lora': {
+      id: '/lora'
+      path: '/lora'
+      fullPath: '/lora'
+      preLoaderRoute: typeof LoraRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/map': {
@@ -402,6 +422,7 @@ const rootRouteChildren: RootRouteChildren = {
   DownloadRoute: DownloadRoute,
   HelpRoute: HelpRoute,
   LoginRoute: LoginRoute,
+  LoraRoute: LoraRoute,
   MapRoute: MapRoute,
   MeshRoute: MeshRoute,
   MessagesRoute: MessagesRouteWithChildren,

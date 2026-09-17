@@ -15,6 +15,9 @@ screenshots
 *.log
 .DS_Store
 .env
+android/local.properties
+attachments
+
 .grok/og-pending
 .grok/status
 tmp

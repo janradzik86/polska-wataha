@@ -28,7 +28,7 @@ data class Pin(val id: String, val lat: Double, val lng: Double, val label: Stri
 data class Badge(val title: String, val description: String)
 data class QueueItem(val id: String, val action: String, val payload: String, val synced: Boolean)
 
-class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
+class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 2) {
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("create table users(id text primary key, email text unique, name text, password text, district text, bio text, lat real, lng real, reputation int, hue int)")
         db.execSQL("create table listings(id text primary key, author_id text, kind text, title text, body text, category text, district text, lat real, lng real, created_at int)")
@@ -41,8 +41,29 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         db.execSQL("create table crisis(id text primary key, author_id text, kind text, body text, lat real, lng real, created_at int)")
         db.execSQL("create table queue(id text primary key, action text, payload text, created_at int, synced int default 0)")
         db.execSQL("create table session(k text primary key, v text)")
+        v2(db)
     }
-    override fun onUpgrade(db: SQLiteDatabase, o: Int, n: Int) {}
+
+    override fun onUpgrade(db: SQLiteDatabase, o: Int, n: Int) {
+        if (o < 2) {
+            v2(db)
+            val c = db.rawQuery("select id, password from users", null)
+            while (c.moveToNext()) {
+                val id = c.getString(0)
+                val pw = c.getString(1) ?: continue
+                if (!pw.startsWith("pbkdf2$")) {
+                    db.update("users", ContentValues().apply { put("password", Security.hashPassword(pw)) }, "id=?", arrayOf(id))
+                }
+            }
+            c.close()
+        }
+    }
+
+    private fun v2(db: SQLiteDatabase) {
+        db.execSQL("create table if not exists login_lock(email text primary key, fails int, until_ms int)")
+        db.execSQL("create table if not exists lora_pair(address text primary key, name text, paired_at int)")
+        db.execSQL("create table if not exists lora_log(id text primary key, dir text, body text, at int)")
+    }
 
     fun seedIfEmpty() {
         val db = writableDatabase
@@ -53,7 +74,8 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         if (n > 0) return
         fun user(id: String, email: String, name: String, pass: String?, dist: String, bio: String, lat: Double, lng: Double, rep: Int, hue: Int) {
             db.insert("users", null, ContentValues().apply {
-                put("id", id); put("email", email); put("name", name); put("password", pass)
+                put("id", id); put("email", email); put("name", name)
+                put("password", pass?.let { Security.hashPassword(it) })
                 put("district", dist); put("bio", bio); put("lat", lat); put("lng", lng)
                 put("reputation", rep); put("hue", hue)
             })
@@ -121,7 +143,7 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         node("NODE_A", "NODE A — Śródmieście", "phone", 52.2297, 21.0122, "online")
         node("NODE_B", "NODE B — Wola", "wifi", 52.231, 20.984, "online")
         node("NODE_C", "NODE C — Praga", "bt", 52.256, 21.035, "online")
-        node("NODE_D", "NODE D — Mokotów (LoRa)", "lora", 52.201, 21.017, "degraded")
+        node("NODE_D", "NODE D — Heltec V4 (LoRa EU868)", "lora", 52.201, 21.017, "online")
 
         db.insert("points", null, ContentValues().apply { put("id", "hp1"); put("title", "Punkt wody — Plac Wilsona"); put("kind", "water"); put("lat", 52.269); put("lng", 20.986) })
         db.insert("points", null, ContentValues().apply { put("id", "hp2"); put("title", "Punkt medyczny"); put("kind", "medical"); put("lat", 52.226); put("lng", 21.012) })
@@ -129,18 +151,41 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         db.insert("points", null, ContentValues().apply { put("id", "hp4"); put("title", "Punkt żywności — Hala Mirowska"); put("kind", "food"); put("lat", 52.239); put("lng", 20.998) })
     }
 
+    class AuthException(msg: String) : Exception(msg)
+
     fun login(email: String, password: String): Profile? {
-        val c = readableDatabase.rawQuery("select * from users where email=? and password=?", arrayOf(email, password))
+        val until = lockUntil(email)
+        if (until > System.currentTimeMillis()) {
+            val min = ((until - System.currentTimeMillis()) / 60_000) + 1
+            throw AuthException("Konto zablokowane na $min min po serii błędnych haseł.")
+        }
+        val c = readableDatabase.rawQuery("select * from users where email=?", arrayOf(email.trim().lowercase()))
         val p = c.toProfile()
         c.close()
-        if (p != null) setSession(p.id)
+        if (p == null || !Security.verifyPassword(password, p.password)) {
+            recordFail(email)
+            return null
+        }
+        if (Security.needsRehash(p.password)) {
+            writableDatabase.update("users", ContentValues().apply { put("password", Security.hashPassword(password)) }, "id=?", arrayOf(p.id))
+        }
+        clearFails(email)
+        setSession(p.id)
         return p
     }
 
     fun register(email: String, password: String, name: String): Profile {
+        val e = email.trim().lowercase()
+        if (!e.contains("@") || e.length < 6) throw AuthException("Podaj poprawny email.")
+        if (password.length < 8) throw AuthException("Hasło min. 8 znaków.")
+        if (name.trim().length < 2) throw AuthException("Podaj imię.")
+        val exists = readableDatabase.rawQuery("select id from users where email=?", arrayOf(e))
+        val taken = exists.moveToFirst()
+        exists.close()
+        if (taken) throw AuthException("Ten email jest już zajęty.")
         val id = "u_${System.currentTimeMillis()}"
         writableDatabase.insert("users", null, ContentValues().apply {
-            put("id", id); put("email", email); put("name", name); put("password", password)
+            put("id", id); put("email", e); put("name", name.trim()); put("password", Security.hashPassword(password))
             put("district", "Śródmieście"); put("bio", ""); put("lat", 52.2297); put("lng", 21.0122)
             put("reputation", 0); put("hue", 175)
         })
@@ -151,8 +196,31 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         return profile(id)!!
     }
 
+    private fun lockUntil(email: String): Long {
+        val c = readableDatabase.rawQuery("select until_ms from login_lock where email=?", arrayOf(email.trim().lowercase()))
+        val v = if (c.moveToFirst()) c.getLong(0) else 0L
+        c.close()
+        return v
+    }
+    private fun recordFail(email: String) {
+        val e = email.trim().lowercase()
+        val c = readableDatabase.rawQuery("select fails from login_lock where email=?", arrayOf(e))
+        val fails = if (c.moveToFirst()) c.getInt(0) + 1 else 1
+        c.close()
+        val until = if (fails >= 5) System.currentTimeMillis() + 5 * 60_000 else 0L
+        writableDatabase.replace("login_lock", null, ContentValues().apply {
+            put("email", e); put("fails", fails); put("until_ms", until)
+        })
+    }
+    private fun clearFails(email: String) {
+        writableDatabase.delete("login_lock", "email=?", arrayOf(email.trim().lowercase()))
+    }
+
     fun setSession(id: String) {
         writableDatabase.replace("session", null, ContentValues().apply { put("k", "uid"); put("v", id) })
+        writableDatabase.replace("session", null, ContentValues().apply {
+            put("k", "tok"); put("v", Security.hashPassword("sess|$id|${System.currentTimeMillis()}").take(40))
+        })
     }
     fun sessionId(): String? {
         val c = readableDatabase.rawQuery("select v from session where k='uid'", null)
@@ -160,7 +228,13 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         c.close()
         return v
     }
-    fun logout() { writableDatabase.delete("session", "k=?", arrayOf("uid")) }
+    fun logout() { writableDatabase.delete("session", "1=1", null) }
+
+    fun rememberLora(address: String, name: String) {
+        writableDatabase.replace("lora_pair", null, ContentValues().apply {
+            put("address", address); put("name", name); put("paired_at", System.currentTimeMillis())
+        })
+    }
 
     fun profile(id: String): Profile? {
         val c = readableDatabase.rawQuery("select * from users where id=?", arrayOf(id))
@@ -292,6 +366,9 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
             put("body", body); put("created_at", System.currentTimeMillis())
         })
         enqueue("message.send", body)
+        if (!LoraRadio.sendText(body, "msg")) {
+            enqueue("lora.hold", body)
+        }
         return tid!!
     }
     fun badges(id: String): List<Badge> {
@@ -337,6 +414,7 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         addBadge(author, "Strażnik sieci", "Tryb kryzysowy")
         bump(author, 4)
         enqueue("crisis.$kind", body)
+        LoraRadio.sendCrisis(kind, body)
     }
     fun enqueue(action: String, payload: String) {
         writableDatabase.insert("queue", null, ContentValues().apply {
@@ -363,7 +441,10 @@ class SiatkaDb(ctx: Context) : SQLiteOpenHelper(ctx, "siatka.db", null, 1) {
         c.close()
         return m
     }
-    private fun android.database.Cursor.toProfile(): Profile? = if (moveToFirst()) readProfile() else null
+    private fun android.database.Cursor.toProfile(): Profile? {
+        if (!moveToFirst()) return null
+        return readProfile()
+    }
     private fun android.database.Cursor.readProfile() = Profile(
         getString(getColumnIndexOrThrow("id")),
         getString(getColumnIndexOrThrow("name")),

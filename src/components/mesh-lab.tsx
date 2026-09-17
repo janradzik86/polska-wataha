@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { listNodes, setNodeStatus } from "@/lib/server/siatka";
 import { routeMesh } from "@/lib/comm/adapters";
@@ -26,8 +27,8 @@ export function MeshLab() {
         <p className="text-xs uppercase tracking-[0.2em] text-muted">Mesh Lab</p>
         <h1 className="font-display text-3xl font-semibold">Symulator węzłów</h1>
         <p className="max-w-prose text-sm text-muted">
-          Cztery węzły A→B→C→D. Wyłącz NODE B i zobacz, jak routing omija awarię. LoRa na NODE D jest
-          warstwą sprzętową — bez radia nie udajemy transmisji.
+          Cztery węzły A→B→C→D. NODE D to Heltec WiFi LoRa 32 V4 (EU868). Wyłącz NODE B i zobacz
+          rerouting. Prawdziwe radio: strona Radio LoRa albo APK.
         </p>
       </header>
 
@@ -124,6 +125,9 @@ export function MeshLab() {
         >
           Zasymuluj awarię NODE B
         </Button>
+        <Link to="/lora" className="mt-3 inline-flex h-11 items-center text-sm text-primary underline-offset-4 hover:underline">
+          Otwórz Radio LoRa · Heltec V4
+        </Link>
       </div>
     </div>
   );

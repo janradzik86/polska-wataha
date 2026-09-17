@@ -20,29 +20,25 @@ function Page() {
       → InternetAdapter        (działający)
       → BluetoothAdapter       (gotowy do testów)
       → WifiDirectAdapter      (gotowy do testów)
-      → LoRaAdapter            (warstwa, bez udawania radia)`}
+      → LoRaAdapter            (Heltec WiFi LoRa 32 V4, EU868)`}
           </pre>
         </section>
         <section className="space-y-2">
-          <h2 className="font-display text-xl text-fg">Działa w V0.2</h2>
+          <h2 className="font-display text-xl text-fg">Działa w V0.4</h2>
           <ul className="list-disc pl-5">
-            <li>Konta, logowanie, konto demo</li>
-            <li>Ogłoszenia, wyszukiwanie, oddawanie, wymiana</li>
-            <li>Pomoc: zgłoszenie potrzeby i oferta</li>
-            <li>Wiadomości, reputacja, odznaki</li>
-            <li>Mapa (bez klucza Google), lokalizacja na żądanie</li>
-            <li>Tryb kryzysowy, status sieci, kolejka offline</li>
-            <li>Mesh Lab: NODE A–D, awaria B, rerouting</li>
-            <li>Backend Postgres + REST /api/v1</li>
-            <li>APK: SQLite, powiadomienia, adaptery, uprawnienia just-in-time</li>
+            <li>Konta z prawdziwym logowaniem (email/hasło, Google, X)</li>
+            <li>Hasła PBKDF2 w APK, blokada po 5 błędach</li>
+            <li>Ogłoszenia, pomoc, wiadomości, reputacja, mapa, kryzys</li>
+            <li>Heltec WiFi LoRa 32 V4: BLE UART + SX1262 EU868, PIN weryfikowany na module (5 błędów = 5 min blokady)</li>
+            <li>Store-and-forward gdy radio lub IP milczy</li>
+            <li>Mesh A–D, NODE D = bramka LoRa</li>
+            <li>APK v0.4.0 do instalacji na telefonie</li>
           </ul>
         </section>
         <section className="space-y-2">
           <h2 className="font-display text-xl text-fg">Przygotowane na kolejne etapy</h2>
           <ul className="list-disc pl-5">
-            <li>V0.3 — testy BLE / Wi-Fi Direct urządzenie–urządzenie</li>
-            <li>V0.4 — fizyczny moduł LoRa (SX126x), bez udawania w telefonie</li>
-            <li>V0.5 — mesh store-and-forward między węzłami</li>
+            <li>V0.5 — mesh store-and-forward między wieloma Heltecami</li>
             <li>V1.0 — pełna sieć autonomicznych węzłów</li>
           </ul>
         </section>

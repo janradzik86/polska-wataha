@@ -64,6 +64,9 @@ function Me() {
           <Link to="/people">Sąsiedzi</Link>
         </Button>
         <Button asChild variant="secondary">
+          <Link to="/lora">Radio LoRa · Heltec V4</Link>
+        </Button>
+        <Button asChild variant="secondary">
           <Link to="/mesh">Mesh Lab</Link>
         </Button>
         <Button asChild variant="secondary">

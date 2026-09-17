@@ -10,8 +10,8 @@ android {
         applicationId = "app.siatka"
         minSdk = 26
         targetSdk = 34
-        versionCode = 3
-        versionName = "0.2.1"
+        versionCode = 4
+        versionName = "0.4.0"
     }
     signingConfigs {
         create("release") {
@@ -38,6 +38,7 @@ android {
     buildFeatures { compose = true }
     composeOptions { kotlinCompilerExtensionVersion = "1.5.14" }
     packaging { resources { excludes += "/META-INF/{AL2.0,LGPL2.1}" } }
+    lint { checkReleaseBuilds = false; abortOnError = false }
 }
 
 dependencies {

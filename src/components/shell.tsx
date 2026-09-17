@@ -54,14 +54,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             ))}
             <Link
-              to="/mesh"
+              to="/lora"
               className={cn(
                 "flex h-11 items-center gap-3 rounded-md px-3 text-sm",
-                pathname === "/mesh" ? "bg-primary text-primary-fg" : "text-muted hover:bg-elevated hover:text-fg",
+                pathname === "/lora" ? "bg-primary text-primary-fg" : "text-muted hover:bg-elevated hover:text-fg",
               )}
             >
               <Radio className="size-4" />
-              Mesh Lab
+              Heltec V4
             </Link>
             <Link
               to="/status"

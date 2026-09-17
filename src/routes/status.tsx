@@ -34,7 +34,7 @@ function Status() {
       </div>
       <div className="rounded-xl border border-border bg-surface p-4">
         <p className="text-sm text-muted">
-          Aplikacja → Communication Service → Adapter → Internet / Bluetooth / Wi-Fi Direct / LoRa
+          Aplikacja → Communication Service → Adapter → Internet / BLE / Heltec SX1262 (EU868)
         </p>
         <div className="mt-3 flex items-center justify-between gap-3">
           <p className="text-sm">{simulate ? "Symulacja braku internetu włączona" : "Symulacja wyłączona"}</p>

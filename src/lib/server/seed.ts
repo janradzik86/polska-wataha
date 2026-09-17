@@ -62,7 +62,7 @@ export async function ensureSeed() {
     ('NODE_A', 'NODE A — Śródmieście', 'phone', 52.2297, 21.0122, 'online'),
     ('NODE_B', 'NODE B — Wola', 'wifi', 52.231, 20.984, 'online'),
     ('NODE_C', 'NODE C — Praga', 'bt', 52.256, 21.035, 'online'),
-    ('NODE_D', 'NODE D — Mokotów (LoRa)', 'lora', 52.201, 21.017, 'degraded')
+    ('NODE_D', 'NODE D — Heltec V4 EU868', 'lora', 52.201, 21.017, 'online')
   `;
 
   await sql`

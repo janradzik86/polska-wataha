@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { GROK_PROVIDERS, authClient, authEnabled, signIn } from "@/lib/auth/client";
 import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/siatka";
 import { ensureDemoUser } from "@/lib/server/siatka";
@@ -82,7 +82,7 @@ function Login() {
             </div>
             <p className="hidden items-center gap-2 text-xs uppercase tracking-[0.22em] text-muted lg:flex">
               <OrzelBialy className="h-4 w-3.5 text-primary" />
-              V0.2 · Warszawa · Biało-czerwoni
+              V0.4 · Heltec V4 · Biało-czerwoni
             </p>
             <div className="mt-3 hidden lg:block">
               <BrandLockup size="lg" stacked />
@@ -95,9 +95,11 @@ function Login() {
             <div className="mt-8 rounded-2xl border border-border bg-surface p-6">
               <div className="flag-stripe mb-5 rounded-full" />
               <h2 className="font-display text-2xl font-medium uppercase tracking-wide">
-                {mode === "in" ? "Wejdź do watahy" : "Utwórz konto testowe"}
+              {mode === "in" ? "Wejdź do watahy" : "Załóż konto"}
               </h2>
-              <p className="mt-1 text-sm text-muted">Email i hasło albo konto demonstracyjne.</p>
+              <p className="mt-1 text-sm text-muted">
+                Własne konto, hasło min. 8 znaków, albo Google / X. Sesja jest prawdziwa.
+              </p>
 
               {authEnabled ? (
                 <form className="mt-6 space-y-3" onSubmit={onSubmit}>
@@ -133,18 +135,15 @@ function Login() {
                   <Button type="submit" className="w-full" disabled={busy}>
                     {mode === "in" ? "Zaloguj" : "Utwórz konto"}
                   </Button>
-                  <Button type="button" variant="secondary" className="w-full" disabled={busy} onClick={demo}>
-                    Wejdź na konto demo
+                  <Button type="button" variant="ghost" className="w-full text-muted" disabled={busy} onClick={demo}>
+                    Konto testowe (offline)
                   </Button>
-                  <p className="text-center text-[11px] text-subtle">
-                    {DEMO_EMAIL} · {DEMO_PASSWORD}
-                  </p>
                   <button
                     type="button"
                     className="w-full text-center text-sm text-muted underline-offset-2 hover:underline"
                     onClick={() => setMode(mode === "in" ? "up" : "in")}
                   >
-                    {mode === "in" ? "Nie masz konta? Załóż testowe" : "Masz konto? Zaloguj się"}
+                    {mode === "in" ? "Nie masz konta? Załóż własne" : "Masz konto? Zaloguj się"}
                   </button>
                   <div className="space-y-2 pt-2">
                     {GROK_PROVIDERS.map((p) => (
@@ -159,6 +158,11 @@ function Login() {
                       </Button>
                     ))}
                   </div>
+                  <p className="pt-2 text-center text-sm text-muted">
+                    <Link to="/download" className="text-primary underline-offset-2 hover:underline">
+                      Pobierz APK na telefon · Heltec V4
+                    </Link>
+                  </p>
                 </form>
               ) : (
                 <p className="mt-4 text-sm text-muted">Logowanie jest wyłączone.</p>

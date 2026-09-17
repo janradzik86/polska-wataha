@@ -1,3 +1,5 @@
+import { loraState } from "@/lib/comm/lora";
+
 export type AdapterHealth = "up" | "ready" | "hardware_missing" | "down";
 
 export type AdapterStatus = {
@@ -10,6 +12,8 @@ export type AdapterStatus = {
 };
 
 export function inspectAdapters(online: boolean): AdapterStatus[] {
+  const lora = loraState();
+  const loraUp = lora.paired && lora.connected;
   return [
     {
       id: "internet",
@@ -19,31 +23,35 @@ export function inspectAdapters(online: boolean): AdapterStatus[] {
       detail: online
         ? "Kanał IP aktywny. Synchronizacja z backendem możliwa."
         : "Brak IP. Ruch trafia do kolejki store-and-forward.",
-      stage: "V0.1 — działający",
+      stage: "V0.4 — działający",
     },
     {
       id: "bluetooth",
       label: "BluetoothAdapter",
-      layer: "BLE / Classic",
-      health: "ready",
-      detail: "Skanowanie i ramki testowe gotowe. Wymaga uprawnienia Bluetooth w momencie użycia.",
-      stage: "V0.3 — przygotowany do testów",
+      layer: "BLE 5 · UART",
+      health: lora.connected ? "up" : "ready",
+      detail: lora.connected
+        ? `BLE do bramki ${lora.deviceName || "Heltec V4"}.`
+        : "Skan BLE pod Heltec WiFi LoRa 32 V4 (nazwa WATAHA-xxxx).",
+      stage: "V0.4 — łącze do radia",
     },
     {
       id: "wifi_direct",
       label: "WifiDirectAdapter",
       layer: "Wi-Fi P2P",
       health: "ready",
-      detail: "Negocjacja grupy P2P zaimplementowana jako warstwa. Czeka na testy urządzenie–urządzenie.",
-      stage: "V0.3 — przygotowany do testów",
+      detail: "Warstwa P2P gotowa. Ruch kryzysowy idzie LoRa + BLE, nie P2P.",
+      stage: "V0.3 — przygotowany",
     },
     {
       id: "lora",
       label: "LoRaAdapter",
-      layer: "LoRa / SX126x",
-      health: "hardware_missing",
-      detail: "Brak modułu LoRa w tym telefonie. Adapter nie udaje transmisji radiowej — czeka na sprzęt (V0.4).",
-      stage: "V0.4 — warstwa pod przyszły sprzęt",
+      layer: "SX1262 · EU868",
+      health: loraUp ? "up" : "ready",
+      detail: loraUp
+        ? `Heltec V4 · PIN OK · ${lora.lastLine || "oczekiwanie na ramki"}`
+        : "Podłącz Heltec WiFi LoRa 32 V4 (HF 863–928). Firmware Watahy, PIN na OLED.",
+      stage: "V0.4 — sprzęt Heltec V4",
     },
   ];
 }

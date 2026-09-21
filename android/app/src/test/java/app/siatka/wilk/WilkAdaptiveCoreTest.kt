@@ -111,6 +111,15 @@ class WilkAdaptiveCoreTest {
     }
 
     @Test
+    fun `nowe pytanie z fraza krok po kroku zmienia temat zamiast przerabiac poprzedni`() {
+        val core = WilkAdaptiveCore(InMemoryWilkLearningStore(), TargetLoraRegistry)
+        core.ask("Jak oczyścić wodę?")
+        val answer = core.ask("Krok po kroku jak skonfigurować LoRa?")
+        assertEquals("LoRa — konfiguracja", answer.topic)
+        assertEquals(ExplanationStyle.STEP_BY_STEP, answer.style)
+    }
+
+    @Test
     fun `mapa sugeruje integracje z mapa offline`() {
         val core = WilkAdaptiveCore()
         val answer = core.ask("gdzie jestem, pokaż mapę")

@@ -65,7 +65,7 @@ class WilkAdaptiveCore(
         val requestedStyle = detectRequestedStyle(normalized)
 
         // Po odpowiedzi kryzysowej nie robimy swobodnego "przepisz inaczej".
-        if (requestedStyle != null && lastAnswer != null) {
+        if (requestedStyle != null && lastAnswer != null && isStyleOnly(normalized)) {
             val previous = lastAnswer!!
             if (previous.crisis) return previous
 
@@ -277,6 +277,22 @@ class WilkAdaptiveCore(
     }
 
     private fun isStyleCommand(q: String): Boolean = detectRequestedStyle(q) != null
+
+    private fun isStyleOnly(q: String): Boolean {
+        var rest = q
+        val phrases = listOf(
+            "nie rozumiem", "prosciej", "latwiej", "po ludzku", "wytlumacz prosto",
+            "nie da sie tak", "nie kumam", "krok po kroku", "po kolei", "co najpierw",
+            "instrukcja krok", "technicznie", "dokladniej", "szczegolowo", "parametry"
+        )
+        phrases.forEach { rest = rest.replace(it, " ") }
+        val filler = setOf("prosze", "wytlumacz", "napisz", "pokaz", "mi", "to", "jeszcze", "raz", "teraz")
+        val meaningful = rest
+            .replace(Regex("[^a-z0-9 ]"), " ")
+            .split(Regex("\\s+"))
+            .filter { it.length >= 2 && it !in filler }
+        return meaningful.size <= 1
+    }
 
     private fun answerId(topic: String?, style: ExplanationStyle, text: String): String {
         val hash = (topic.orEmpty() + "|" + style.name + "|" + text).hashCode()

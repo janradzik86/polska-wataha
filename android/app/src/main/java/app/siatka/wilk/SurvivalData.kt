@@ -53,7 +53,7 @@ object SurvivalData {
             listOf(
                 "🔺 ZASADA: nie pij wody z nieznanego źródła bez oczyszczenia!",
                 "PRZEGOTOWANIE (najpewniejsze): 1 min wrzenia + 10 min odstawienia.",
-                "Tabletki uzdatniające / 2 krople jodyny na litr — 30 minut odczekać.",
+                "Tabletki lub inne środki do uzdatniania stosuj wyłącznie zgodnie z instrukcją producenta; nie improwizuj z dawkami chemikaliów.",
                 "Filtr butelkowy (np. Sawyer) lub własny: butelka → ściereczka → węgiel → piasek → żwir.",
                 "Zbieraj: deszczówka (folia → wiadro), skropliny z folii na słońcu (transpiracja),",
                 "Topniejący śnieg — przed użyciem przegotuj (może zawierać zanieczyszczenia).",
@@ -68,8 +68,8 @@ object SurvivalData {
                 "Sposoby bez zapałek: bateria + folia aluminiowa / spinacz; soczewka; tarcie (łuk, świder).",
                 "Rozpałka: kora brzozy, żywica, watolina, wiórki, kawałek świecy.",
                 "Ognisko: miejsce osłonięte od wiatru, wianek z kamieni, NIGDY pod drzewem.",
-                "W schronieniu: świeca w puszce daje światło i 15°C więcej w małym pomieszczeniu.",
-                "Koc termiczny NRC: złota strona do ciała przy zimnie; srebrna na zewnątrz.",
+                "W zamkniętym pomieszczeniu nie używaj prowizorycznych źródeł ognia jako ogrzewania — ryzyko pożaru i tlenku węgla.",
+                "Koca NRC używaj zgodnie z instrukcją producenta; najważniejsze jest ograniczenie wiatru, wilgoci i utraty ciepła.",
                 "Hipotermia: nie rozgrzewaj kończyn przed tułowiem — najpierw klatka piersiowa, kark, pachwiny.",
                 "Uwaga na tlenek węgla: nigdy nie pal wynalazków bez wentylacji!"
             )
@@ -78,11 +78,11 @@ object SurvivalData {
             "schron", "Schronienie — dom i teren", "🏠",
             listOf("schronienie", "dom", "piwnica", "izolacja", "namiot", "baza"),
             listOf(
-                "Najlepsza baza: piwnica/parter, ściany z cegły lub betonu, jedno wyjście awaryjne.",
+                "Wybierz miejsce bezpieczne konstrukcyjnie, osłonięte od zagrożenia i z możliwą drogą ewakuacji; rodzaj pomieszczenia zależy od sytuacji.",
                 "Uszczelnij okna i drzwi (folia, taśma, mokre ręczniki).",
                 "Zimą: pomieszczenie SHERPA — jeden pokój, zasłonięte okna, spanie blisko siebie.",
                 "Latem: strona północna, okna zasłonięte folią odbijającą, butelki z wodą jako klimatyzator.",
-                "Na zewnątrz: wigwam/ziemianka lub namiot z folii — podwójna ściana daje +8°C.",
+                "Na zewnątrz priorytetem jest osłona przed wiatrem i opadami oraz dobra izolacja od podłoża; nie zakładaj stałego zysku temperatury.",
                 "Legowisko: gałęzie/tektura + koc — izolacja od ziemi jest kluczowa (nie śpij na gołej ziemi!).",
                 "Znakuj punkt zbiórki dla watahy: kolorowa folia, flara, latarka w rytmie SOS."
             )
@@ -120,8 +120,8 @@ object SurvivalData {
             listOf(
                 "SOS: 3× krótki / 3× długi / 3× krótki (światło, dźwięk, gwizdek, miganie latarką).",
                 "Gwizdek: sygnał słyszalny 3× dalej niż krzyk — noś przy sobie.",
-                "Radio: nasłuch 4G → komunikat → wataha działa jak rozgłośnia (testuj!).",
-                "Telefon w kryzysie: 112 działa nawet bez SIM (jeśli jest zasięg jakiejś sieci).",
+                "Radio i oficjalne komunikaty: korzystaj z dostępnych źródeł informacji i testuj sprzęt wcześniej.",
+                "W sytuacji zagrożenia próbuj połączenia z 112; możliwość połączenia zależy od telefonu, dostępnej sieci i lokalnych warunków.",
                 "MESH LAB (w tej aplikacji): testuj routing A→B→C→D i awarie — przećwicz wcześniej!",
                 "Znaki na ziemi: X = potrzebuję pomocy, trójkąt = ranni, strzałka = kierunek marszu.",
                 "Plan B: kartka na drzwiach z godziną i trasą — niech wataha wie, gdzie jesteś."
@@ -131,9 +131,9 @@ object SurvivalData {
             "pogoda", "Ekstremalne warunki — co robić", "🌡️",
             listOf("powodz", "burza", "upal", "mroz", "snieg", "grad", "wiatr", "pogoda"),
             listOf(
-                "POWÓDŹ: wyżej, nie wjeżdżaj autem w wodę (30 cm znosi samochód!), prąd wyłączony przy zalaniu.",
+                "POWÓDŹ: przejdź wyżej, nie wchodź ani nie wjeżdżaj w wodę o nieznanej głębokości lub nurcie; instalację elektryczną odłącz tylko, jeśli można to zrobić bezpiecznie.",
                 "BURZA: kucnij, nie bądź najwyższym punktem; od elektryki > 3 m; auto jest bezpiecznym schronem.",
-                "UPAL: ciemne zasłony, wodne okłady, 1–2 l wody/godz. aktywności, unikaj 11:00–15:00.",
+                "UPAŁ: ogranicz wysiłek, szukaj chłodu i cienia, pij regularnie odpowiednio do warunków; przy objawach przegrzania rozpocznij chłodzenie i szukaj pomocy.",
                 "MROŹ: wielowarstwowo (nie jedna gruba!), czapka i kark krytyczne; ruszaj palcami.",
                 "WICHURA: zamknij okna, away od szyb, przygotuj powerbanka i wodę — dryf sieci możliwy.",
                 "ŚNIEG: zapas jedzenia 2 dni, łopata w aucie, napełnij wannę wodą (awaria sieci!).",
@@ -173,7 +173,7 @@ object SurvivalData {
                 "NIE zostawiaj zwierząt! 80% zaginionych w kryzysie to efekt porzucenia.",
                 "Plecak zwierzęcia: karma 7 dni, miska, smycz/kaganiec, kopia szczepień, koc.",
                 "Znak identyfikacyjny: adresówka + tatuaż/żeton — zdjęcie z Tobą w telefonie.",
-                "Transport: transporter/klatka, relanium (krople) przy silnym stresie — u weterynarza.",
+                "Transport: transporter/klatka; przy silnym stresie zwierzęcia skontaktuj się z weterynarzem — nie podawaj leków na własną rękę.",
                 "Zwierzęta też się boją: ciepły kąt, koc, stały rytm karmienia.",
                 "Punkty ewakuacji przyjmujące zwierzęta: zapytaj w punkcie pomocy watahy."
             )
@@ -240,10 +240,10 @@ object SurvivalData {
             "⛈️ Wejdź do budynku lub auta. Na otwartym: kucnij, nie bądź najwyższym punktem, od metalowych przedmiotów >3 m. Wyłącz z gniazdek elektronikę (przepięcia!). Odczekaj 30 min od ostatniego grzmotu."),
         AskEntry("Upał", listOf("upał", "gorąco", "przegrzanie", "udar", "słońce"),
             "Co robić w upał?",
-            "🥵 1–2 l wody na godz. aktywności, unikaj 11–15, ciemne zasłony, mokre okłady na kark/nadgarstki. Objawy udaru (splątanie, gorąca sucha skóra): chłodź wodą i wzywaj pomoc. W watahe punktem chłodzenia może być piwnica — zapytaj."),
+            "🥵 Ogranicz wysiłek i przebywanie w słońcu, szukaj chłodu, pij regularnie. Przy splątaniu, omdleniu lub silnym przegrzaniu rozpocznij szybkie chłodzenie i wezwij 112."),
         AskEntry("Mróz", listOf("mróz", "mrozu", "zima", "śnieg", "przemarznięcie", "hipotermia"),
             "Co robić przy mrozie?",
-            "🧊 Wielowarstwowo (naturalne tkaniny), czapka i kark krytyczne. Hipotermia: rozgrzewaj tułów, nie kończyny najpierw; gorący słodki napój. W domu: jeden mały pokój, zasłonięte okna, świeca w puszce. Napełnij wannę wodą przed mrozem (awaria sieci)."),
+            "🧊 Ubieraj się warstwowo i chroń przed wiatrem oraz wilgocią. Przy podejrzeniu hipotermii ogrzewaj stopniowo głównie tułów; osobie splątanej lub nieprzytomnej nie podawaj napojów i wezwij pomoc."),
         AskEntry("Prąd", listOf("awaria prądu", "brak prądu", "czarno", "prąd zniknął", "agregat"),
             "Brak prądu — co robić?",
             "🔌 Lodówka: nie otwieraj — jedzenie trzyma ok. 4h (12h w zamrażarce). Używaj z wyprzedzeniem: naładuj powerbanki, telefony, napełnij wannę wodą. Radio korbkowe na nasłuch. W watahe ustal punkt z agregatem — jeden wystarczy dla wielu."),

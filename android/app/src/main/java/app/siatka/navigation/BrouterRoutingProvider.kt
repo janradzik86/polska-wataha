@@ -18,5 +18,8 @@ class BrouterRoutingProvider : OfflineRoutingProvider {
 
 class PackGraphRoutingProvider : OfflineRoutingProvider {
     override val id: String = "pack-graph"
-    override val available: Boolean = true
+    /** false, dopóki aktywność nie poda grafu paczki. Sam plik nie liczy trasy. */
+    override val available: Boolean = false
+
+    fun plan(nodeCount: Int): String? = if (nodeCount > 1) null else null
 }

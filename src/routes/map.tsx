@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { mapPayload } from "@/lib/server/siatka";
 import type { MapPin } from "@/lib/siatka";
 import { mayParentSee } from "@/lib/family/access";
+import { ParentSosReceiver } from "@/lib/family/sos-receiver";
+import { REGIONS, requestPackDownload } from "@/lib/navigation/offline";
+import { FLAG_DEFAULTS } from "@/lib/platform/flags";
 
 export const Route = createFileRoute("/map")({ component: Page });
 
@@ -22,7 +25,9 @@ function MapView() {
   const q = useQuery({ queryKey: ["map"], queryFn: () => mapPayload() });
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [packNote, setPackNote] = useState("");
   const data = q.data;
+  const receiver = new ParentSosReceiver();
 
   const pins: MapPin[] = useMemo(() => {
     if (!data) return [];
@@ -101,23 +106,74 @@ function MapView() {
         ))}
       </div>
       <MapBoard pins={pins} me={me} />
-      <section className="rounded-2xl border border-border p-4">
-        <h2 className="font-display text-xl">Dziecko</h2>
-        <p className="mt-2 text-sm text-muted">
-          Pozycja dziecka przychodzi tylko z aktywnego parent_link i za zgodą.
-          {adminBlocked.ok ? " " : " Administrator bez tego linku jej nie dostaje."}
-          Nie ma jeszcze żywej pozycji z mostu, więc przyciski nie rysują dziecka.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" disabled>
-            Pokaż na mapie
-          </Button>
-          <Button type="button" variant="secondary" disabled>
-            Nawiguj do dziecka
-          </Button>
-        </div>
-        <p className="mt-2 text-xs text-muted">BRouter nie jest podłączony. Nawigacja ulicami nie wystartuje.</p>
-      </section>
+      {FLAG_DEFAULTS.enableChildLocation ? (
+        <section className="rounded-2xl border border-border p-4">
+          <h2 className="font-display text-xl">Dziecko</h2>
+          <p className="mt-2 text-sm text-muted">
+            Pozycja dziecka przychodzi tylko z aktywnego parent_link i za zgodą.
+            {adminBlocked.ok ? " " : " Administrator bez tego linku jej nie dostaje."}
+            Nie ma jeszcze żywej pozycji z mostu, więc status to nieaktualna / offline.
+            Przyciski nie rysują dziecka.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" disabled>
+              Pokaż na mapie
+            </Button>
+            <Button type="button" variant="secondary" disabled>
+              Nawiguj do dziecka
+            </Button>
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            BRouter nie jest podłączony. Graf paczki w tej aplikacji też jeszcze nie liczy trasy.
+          </p>
+        </section>
+      ) : null}
+      {FLAG_DEFAULTS.enableSosAudio ? (
+        <section className="rounded-2xl border border-border p-4">
+          <h2 className="font-display text-xl">SOS dziecka</h2>
+          <p className="mt-2 text-sm">Czekam na SOS dziecka.</p>
+          <p className="mt-1 text-sm text-muted">
+            {receiver.recording
+              ? "Odbieram dźwięk. Nagranie zostaje na tym urządzeniu."
+              : "Nie nagrywam. Nagranie ruszy dopiero, gdy przyjdzie prawdziwa ścieżka audio."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" variant="secondary" disabled>
+              Słuchaj
+            </Button>
+            <Button type="button" variant="secondary" disabled>
+              Zatrzymaj nagranie
+            </Button>
+          </div>
+        </section>
+      ) : null}
+      {FLAG_DEFAULTS.enableOfflineMaps ? (
+        <section className="rounded-2xl border border-border p-4">
+          <h2 className="font-display text-xl">Mapy offline</h2>
+          <p className="mt-2 text-sm text-muted">
+            Paczka ma format WATAHA_MAP_PACK_V1. W kryzysie pobieranie jest zablokowane. Ulic z internetu nie ściągam.
+          </p>
+          {packNote ? <p className="mt-2 text-sm">{packNote}</p> : null}
+          <ul className="mt-3 space-y-2">
+            {REGIONS.map((region) => (
+              <li key={region.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span>
+                  {region.name}
+                  <span className="text-muted"> · brak paczki</span>
+                </span>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPackNote(requestPackDownload({ crisis: false, online: navigator.onLine }).reason)}
+                >
+                  Pobierz
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </div>
   );
 }

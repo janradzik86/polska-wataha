@@ -11,7 +11,8 @@ enum class WilkAction {
     SHOW_MY_LOCATION,
     OPEN_LORA,
     OPEN_MESH,
-    OPEN_SURVIVAL_GUIDE
+    OPEN_SURVIVAL_GUIDE,
+    CHECK_KNOWLEDGE_UPDATES
 }
 
 data class WilkActionSuggestion(
@@ -42,6 +43,13 @@ object WilkIntegrationContract {
             )
             topic in setOf("Woda", "Ogień", "Pierwsza pomoc", "Schronienie", "Checklista 72h") -> listOf(
                 WilkActionSuggestion(WilkAction.OPEN_SURVIVAL_GUIDE, "🏕️ Poradnik")
+            )
+            topic == "Aktualizacje wiedzy" -> listOf(
+                WilkActionSuggestion(
+                    WilkAction.CHECK_KNOWLEDGE_UPDATES,
+                    "🔄 Sprawdź aktualizacje wiedzy",
+                    requiresInternet = true
+                )
             )
             else -> emptyList()
         }

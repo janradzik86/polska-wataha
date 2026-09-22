@@ -6,6 +6,7 @@ import { MapBoard } from "@/components/map-board";
 import { Button } from "@/components/ui/button";
 import { mapPayload } from "@/lib/server/siatka";
 import type { MapPin } from "@/lib/siatka";
+import { mayParentSee } from "@/lib/family/access";
 
 export const Route = createFileRoute("/map")({ component: Page });
 
@@ -67,6 +68,15 @@ function MapView() {
     );
   }
 
+  const childAccess = mayParentSee({
+    viewerId: "rodzic",
+    childId: "dziecko",
+    viewerIsAdmin: true,
+    linkStatus: "active",
+    parentUserId: "rodzic",
+    consent: "while_app_open",
+  });
+
   return (
     <div className="space-y-4">
       <div className="flex items-end justify-between gap-3">
@@ -91,6 +101,23 @@ function MapView() {
         ))}
       </div>
       <MapBoard pins={pins} me={me} />
+      <section className="rounded-2xl border border-border p-4">
+        <h2 className="font-display text-xl">Dziecko</h2>
+        <p className="mt-2 text-sm text-muted">
+          Pozycja dziecka przychodzi tylko z aktywnego parent_link i za zgodą. Administrator jej nie dostaje
+          {childAccess.ok ? "." : " — ten przykład admina jest odrzucony."}
+          Nie ma jeszcze żywej pozycji z mostu, więc przyciski nie rysują dziecka.
+        </p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" disabled>
+            Pokaż na mapie
+          </Button>
+          <Button type="button" variant="secondary" disabled>
+            Nawiguj do dziecka
+          </Button>
+        </div>
+        <p className="mt-2 text-xs text-muted">BRouter nie jest podłączony. Nawigacja ulicami nie wystartuje.</p>
+      </section>
     </div>
   );
 }

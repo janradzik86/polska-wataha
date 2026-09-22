@@ -68,8 +68,8 @@ function MapView() {
     );
   }
 
-  const childAccess = mayParentSee({
-    viewerId: "rodzic",
+  const adminBlocked = mayParentSee({
+    viewerId: "admin",
     childId: "dziecko",
     viewerIsAdmin: true,
     linkStatus: "active",
@@ -104,8 +104,8 @@ function MapView() {
       <section className="rounded-2xl border border-border p-4">
         <h2 className="font-display text-xl">Dziecko</h2>
         <p className="mt-2 text-sm text-muted">
-          Pozycja dziecka przychodzi tylko z aktywnego parent_link i za zgodą. Administrator jej nie dostaje
-          {childAccess.ok ? "." : " — ten przykład admina jest odrzucony."}
+          Pozycja dziecka przychodzi tylko z aktywnego parent_link i za zgodą.
+          {adminBlocked.ok ? " " : " Administrator bez tego linku jej nie dostaje."}
           Nie ma jeszcze żywej pozycji z mostu, więc przyciski nie rysują dziecka.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">

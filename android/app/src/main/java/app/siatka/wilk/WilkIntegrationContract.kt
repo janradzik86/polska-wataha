@@ -12,7 +12,8 @@ enum class WilkAction {
     OPEN_LORA,
     OPEN_MESH,
     OPEN_SURVIVAL_GUIDE,
-    CHECK_KNOWLEDGE_UPDATES
+    CHECK_KNOWLEDGE_UPDATES,
+    OPEN_NAVIGATION
 }
 
 data class WilkActionSuggestion(
@@ -31,9 +32,10 @@ object WilkIntegrationContract {
         }
 
         return when {
-            topic == "Mapa" || topic == "Gdzie jestem" -> listOf(
+            topic == "Mapa" || topic == "Gdzie jestem" || topic == "Nawigacja" -> listOf(
                 WilkActionSuggestion(WilkAction.OPEN_OFFLINE_MAP, "🗺️ Mapa offline"),
-                WilkActionSuggestion(WilkAction.SHOW_MY_LOCATION, "📍 Moja pozycja")
+                WilkActionSuggestion(WilkAction.SHOW_MY_LOCATION, "📍 Moja pozycja"),
+                WilkActionSuggestion(WilkAction.OPEN_NAVIGATION, "🧭 Nawiguj offline")
             )
             topic?.startsWith("LoRa") == true -> listOf(
                 WilkActionSuggestion(WilkAction.OPEN_LORA, "📡 LoRa")

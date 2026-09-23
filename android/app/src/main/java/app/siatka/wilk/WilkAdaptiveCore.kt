@@ -56,7 +56,8 @@ class InMemoryWilkLearningStore : WilkLearningStore {
  */
 class WilkAdaptiveCore(
     private val store: WilkLearningStore = InMemoryWilkLearningStore(),
-    private val loraRegistry: LoraSupportRegistry = NoConfirmedLoraSupport
+    private val loraRegistry: LoraSupportRegistry = NoConfirmedLoraSupport,
+    private val fieldLearningStore: WilkFieldLearningStore = InMemoryWilkFieldLearningStore()
 ) {
     private var lastAnswer: WilkAnswer? = null
 
@@ -209,6 +210,40 @@ class WilkAdaptiveCore(
     }
 
     fun getLearningState(topic: String): TopicLearning? = store.read(topic)
+
+    /**
+     * Uczy się z realnego wyniku rozmowy, ale nie zamienia pojedynczej historii
+     * w globalny fakt. Obserwacja zostaje lokalnie jako doświadczenie użytkownika.
+     */
+    fun reportFieldOutcome(
+        topic: String,
+        proposedAction: String?,
+        actionTaken: String,
+        worked: Boolean,
+        context: String = ""
+    ) {
+        if (actionTaken.trim().length !in 3..500) return
+        if (context.length > 500) return
+        fieldLearningStore.add(
+            FieldObservation(
+                id = "field-" + System.currentTimeMillis().toString(16),
+                topic = topic,
+                proposedAction = proposedAction?.trim()?.take(500),
+                actionTaken = actionTaken.trim(),
+                worked = worked,
+                context = context.trim(),
+                createdAtEpochMs = System.currentTimeMillis()
+            )
+        )
+    }
+
+    /**
+     * Zwraca lokalne doświadczenia do planowania i rozmowy po kryzysie.
+     * Nie nadpisuje nimi VerifiedCrisisKnowledge.
+     */
+    fun fieldLessons(topic: String): List<String> =
+        WilkFieldLearning.summarize(topic, fieldLearningStore)
+
 
     private fun rememberStyle(topic: String?, style: ExplanationStyle) {
         if (topic == null) return

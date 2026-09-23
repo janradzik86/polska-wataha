@@ -8,6 +8,15 @@ package app.siatka.wilk
  * zweryfikowanej lokalnej wersji.
  */
 object VerifiedKnowledgeUpdatePolicy {
+    /** Compatibility helper used by the app shell. */
+    fun mayFetch(crisis: Boolean, online: Boolean): Boolean = !crisis && online
+
+    /** Minimal source gate before cryptographic verification. */
+    fun accepts(sourceUrls: List<String>, signed: Boolean): Boolean {
+        if (!signed || sourceUrls.isEmpty()) return false
+        return sourceUrls.all { it.startsWith("https://") }
+    }
+
     enum class Domain {
         LAW,
         FIRST_AID,

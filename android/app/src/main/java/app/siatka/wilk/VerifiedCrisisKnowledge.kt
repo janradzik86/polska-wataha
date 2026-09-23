@@ -21,7 +21,9 @@ object VerifiedCrisisKnowledge {
     val knownTopics = setOf(
         "KRYZYS", "Pierwsza pomoc — RKO", "Pierwsza pomoc — krwotok",
         "Pierwsza pomoc — zadławienie", "Pierwsza pomoc — oparzenie",
-        "Hipotermia", "Udar cieplny", "Woda — bezpieczeństwo", "Powódź — bezpieczeństwo", "Pierwsza pomoc"
+        "Hipotermia", "Udar cieplny", "Woda — bezpieczeństwo", "Woda — awaryjne uzdatnianie",
+        "Woda — filtr polowy", "Woda — SODIS", "Woda — źródła awaryjne",
+        "Powódź — bezpieczeństwo", "Pierwsza pomoc"
     )
 
     fun answer(userText: String): Reply? {
@@ -83,10 +85,42 @@ object VerifiedCrisisKnowledge {
             )
         }
 
+        if (containsAny(q, "wegiel drzewny", "węgiel drzewny", "filtr z wegla", "filtr z węgla", "filtr polowy", "filtr terenowy", "piasek zwir wegiel", "piasek żwir węgiel")) {
+            return Reply(
+                "Woda — filtr polowy",
+                "💧 Węgiel drzewny NIE jest sam w sobie pewnym środkiem do dezynfekcji wody. Zwykły czysty węgiel z nieimpregnowanego drewna może być warstwą filtra wstępnego i adsorbować część zapachów lub związków organicznych, ale nie gwarantuje usunięcia bakterii, wirusów ani pasożytów. Awaryjny filtr: na odpływie czysta tkanina, nad nią drobno rozkruszony i przepłukany węgiel drzewny, następnie drobny piasek, wyżej grubszy piasek i żwir. Wodę lej powoli; pierwsze porcje odrzuć, aż przestaną nieść pył. Po filtracji NADAL zastosuj dezynfekcję: najlepiej gotowanie, a gdy to niemożliwe — odpowiedni środek chemiczny albo SODIS dla klarownej wody. Nie używaj węgla z drewna malowanego, impregnowanego, klejonego ani z odpadów. Woda podejrzana o paliwo, pestycydy, toksyczne chemikalia lub skażenie promieniotwórcze wymaga innego źródła.",
+                crisis = true
+            )
+        }
+
+        if (containsAny(q, "sodis", "slonce woda", "słońce woda", "dezynfekcja sloncem", "dezynfekcja słońcem", "nie mam jak zagotowac", "nie mam jak zagotować")) {
+            return Reply(
+                "Woda — SODIS",
+                "☀️ Jeśli nie możesz gotować ani użyć środka dezynfekcyjnego: najpierw sklaruj wodę przez osadzenie lub czystą tkaninę. Napełnij czyste, przezroczyste plastikowe butelki klarowną wodą i połóż je na boku w pełnym słońcu. Przy mocnym słońcu: około 6 godzin; przy zachmurzeniu: 2 dni. SODIS ogranicza zagrożenie mikrobiologiczne, ale NIE usuwa paliw, metali ciężkich, pestycydów ani innych toksycznych chemikaliów.",
+                crisis = true
+            )
+        }
+
+        if (containsAny(q, "kaluz", "kałuż", "nie mam wody", "brak wody", "musze pic", "muszę pić", "woda z rzeki", "woda ze strumienia", "woda z jeziora")) {
+            return Reply(
+                "Woda — awaryjne uzdatnianie",
+                "🚨 Najpierw wybierz najczystsze dostępne źródło i unikaj wody z widoczną warstwą paliwa, chemicznym zapachem, ściekami lub martwymi zwierzętami. Jeśli woda jest mętna: odstaw ją do opadnięcia osadu albo przepuść przez czystą tkaninę. Potem: 1) najlepiej doprowadź klarowną wodę do mocnego wrzenia przez co najmniej 1 minutę; 2) jeśli nie możesz gotować, użyj środka do dezynfekcji wody dokładnie według etykiety; 3) jeśli nie masz ani ognia, ani chemii, dla klarownej wody użyj SODIS. Filtr improwizowany z piasku/żwiru/węgla traktuj jako filtr wstępny — po nim nadal dezynfekuj.",
+                crisis = true
+            )
+        }
+
+        if (containsAny(q, "woda z bojlera", "woda z podgrzewacza", "woda ze spłuczki", "woda z toalety", "gdzie znalezc wode", "gdzie znaleźć wodę")) {
+            return Reply(
+                "Woda — źródła awaryjne",
+                "💧 Zanim sięgniesz po kałużę, sprawdź bezpieczniejsze zapasy: zamknięte butelki, kostki lodu z wcześniej bezpiecznej wody, zbiornik podgrzewacza ciepłej wody użytkowej (nie instalacji grzewczej) oraz czysty zbiornik spłuczki toalety, jeśli nie ma w nim chemicznych kostek lub płynów. Deszczówkę i wodę powierzchniową traktuj jako wymagającą uzdatnienia.",
+                crisis = true
+            )
+        }
+
         if (containsAny(q, "skażona woda", "skazona woda", "czy gotowac wode", "czy gotować wodę", "woda po powodzi", "jak oczyscic wode", "jak oczyścić wodę", "czy ta woda jest bezpieczna")) {
             return Reply(
                 "Woda — bezpieczeństwo",
-                "💧 Przy komunikacie o skażeniu wody stosuj dokładnie zalecenia służb lub wodociągów. Gotowanie pomaga przy wielu zagrożeniach biologicznych, ale nie usuwa wielu zanieczyszczeń chemicznych. Jeśli podejrzewane jest skażenie chemiczne lub paliwem, korzystaj z bezpiecznego źródła zastępczego wskazanego przez służby. Wodę po kontakcie z wodą powodziową traktuj jako potencjalnie zanieczyszczoną.",
+                "💧 Gotowanie i dezynfekcja pomagają przy zagrożeniach biologicznych, ale nie naprawią wody skażonej paliwem, toksycznymi chemikaliami lub materiałem promieniotwórczym. Przy wodzie mętnej najpierw pozwól osadowi opaść albo przefiltruj ją przez czystą tkaninę. Najpewniejszą metodą zabicia drobnoustrojów jest zagotowanie klarownej wody do mocnego wrzenia przez co najmniej 1 minutę. Jeśli nie możesz gotować, użyj zatwierdzonego środka chemicznego według etykiety lub SODIS. Sam węgiel drzewny i filtr piaskowy nie są pełną dezynfekcją.",
                 crisis = false
             )
         }

@@ -99,5 +99,6 @@ fun createPersistentWilk(
 ): WilkAdaptiveCore =
     WilkAdaptiveCore(
         store = SharedPrefsWilkLearningStore(context),
-        loraRegistry = loraRegistry
+        loraRegistry = loraRegistry,
+        fieldLearningStore = SharedPrefsWilkFieldLearningStore(context)
     )

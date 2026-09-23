@@ -13,21 +13,10 @@ android {
         versionCode = 4
         versionName = "0.4.0"
     }
-    signingConfigs {
-        create("release") {
-            storeFile = file("keystore.jks")
-            storePassword = "siatka2026"
-            keyAlias = "siatka"
-            keyPassword = "siatka2026"
-        }
-    }
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
-        }
-        debug {
-            signingConfig = signingConfigs.getByName("release")
+            // Release signing is supplied by the release pipeline, never committed to source.
         }
     }
     compileOptions {

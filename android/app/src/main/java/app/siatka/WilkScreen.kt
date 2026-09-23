@@ -88,6 +88,16 @@ fun WilkScreen(
                 WilkAction.SHOW_MY_LOCATION -> OutlinedButton(onClick = onMap, modifier = Modifier.fillMaxWidth()) { Text("📍 Moja pozycja") }
                 WilkAction.OPEN_LORA, WilkAction.OPEN_MESH -> OutlinedButton(onClick = onLora, modifier = Modifier.fillMaxWidth()) { Text("📡 Radio LoRa / Mesh") }
                 WilkAction.OPEN_SURVIVAL_GUIDE -> Text("🏕️ Poradnik jest dostępny przez bazę WILKA.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                WilkAction.CHECK_KNOWLEDGE_UPDATES -> OutlinedButton(
+                    onClick = {
+                        answer = core.ask("Aktualizacje wiedzy")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("🔄 Sprawdź aktualizacje wiedzy") }
+                WilkAction.OPEN_NAVIGATION -> OutlinedButton(
+                    onClick = onMap,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("🧭 Nawiguj offline") }
             }
         }
 

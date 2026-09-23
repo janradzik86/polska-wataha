@@ -68,6 +68,7 @@ sealed class Screen {
     data object Profile : Screen()
     data object Mesh : Screen()
     data object Status : Screen()
+    data object Wilk : Screen()
     data object Crisis : Screen()
 }
 
@@ -139,6 +140,13 @@ private fun SiatkaRoot(db: SiatkaDb, activity: MainActivity) {
                                 }, { go(it) })
                                 Screen.Mesh -> MeshScreen(db) { refresh() }
                                 Screen.Status -> StatusScreen(db, activity, simulateOffline, { simulateOffline = it }, { refresh() })
+                                Screen.Wilk -> WilkScreen(
+                                    activity = activity,
+                                    onMap = { replace(Screen.Map) },
+                                    onCrisis = { go(Screen.Crisis) },
+                                    onLora = { go(Screen.Mesh) },
+                                    onStatus = { go(Screen.Status) },
+                                )
                                 else -> {}
                             }
                         }
@@ -510,6 +518,7 @@ private fun ProfileScreen(db: SiatkaDb, me: Profile, onOut: () -> Unit, go: (Scr
         Text("Odznaki", color = Fg, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
         db.badges(fresh.id).forEach { Text("· ${it.title} — ${it.description}", color = Muted, fontSize = 13.sp) }
         SecondaryBtn("Sąsiedzi") { go(Screen.People) }
+        SecondaryBtn("🐺 WILK · asystent offline") { go(Screen.Wilk) }
         SecondaryBtn("Radio LoRa · Heltec V4") { go(Screen.Mesh) }
         SecondaryBtn("Status i offline") { go(Screen.Status) }
         TextButton(onClick = onOut) { Text("Wyloguj", color = Danger) }

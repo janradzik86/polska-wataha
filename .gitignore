@@ -22,3 +22,7 @@ attachments
 .grok/status
 tmp
 /tmp
+
+# Android signing material
+*.jks
+*.keystore

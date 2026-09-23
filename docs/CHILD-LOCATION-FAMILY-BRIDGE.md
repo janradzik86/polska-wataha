@@ -1,13 +1,31 @@
-# Lokalizacja dziecka
+# Polska Wataha: lokalizacja dziecka
 
-Widok rodzica dostaje pozycję tylko gdy:
+Rodzic/opiekun może widzieć bieżącą pozycję dziecka tylko przez aktywny Family Bridge.
 
-- parent_link ma status active
-- viewer jest parent_user_id tego linku
-- child_location_consent nie jest off
+Warunki:
+- `parent_link` ma status `active`,
+- viewer jest `parent_user_id` tego linku,
+- zgoda lokalizacyjna dziecka nie jest `off`,
+- backend sprawdza uprawnienia przy każdym odczycie,
+- brak publicznego endpointu z dokładną pozycją,
+- ADMIN bez relacji rodzic-dziecko nie widzi lokalizacji.
 
-ADMIN nie widzi cudzych dzieci.
+Status pozycji:
+- „aktualna”, gdy ostatni fix ma nie więcej niż 3 minuty,
+- później „nieaktualna”,
+- przy braku internetu można pokazać ostatnią pozycję zapisaną lokalnie, ale aplikacja nie udaje nowej synchronizacji.
 
-Status pozycji: aktualna, gdy ostatni fix ma mniej niż 3 minuty. W przeciwnym razie nieaktualna.
+UI rodzica:
+- karta dziecka,
+- „Pokaż na mapie”,
+- „Ostatnia aktualizacja: ...”,
+- dokładność pozycji,
+- status online/offline.
 
-Brak internetu: ostatni znany fix może zostać na telefonie rodzica. Nowy sync nie jest udawany.
+Młoda Wataha:
+- widoczny status udostępniania,
+- osobna zgoda na pracę w tle,
+- możliwość wyłączenia udostępniania,
+- SOS może przesłać bieżącą pozycję.
+
+Nie implementować ukrytego trackingu ani publicznego śledzenia.

@@ -1,25 +1,31 @@
 package app.siatka.navigation
 
 /**
- * Adapter BRouter. available = false, dopóki nie ma natywnej binarki i paczek odcinków.
- * plan nie zwraca wymyślonej trasy.
+ * Adapter BRouter. Nie udaje działającej trasy, dopóki natywny silnik i grafy
+ * routingu nie są faktycznie podłączone.
  */
-interface OfflineRoutingProvider {
-    val id: String
-    val available: Boolean
-}
-
 class BrouterRoutingProvider : OfflineRoutingProvider {
-    override val id: String = "brouter"
-    override val available: Boolean = false
+    val id: String = "brouter"
+    val available: Boolean = false
 
-    fun plan(): String? = null
+    override fun route(from: GeoPoint, to: GeoPoint, mode: TravelMode): RouteResult {
+        error("BRouter is not connected to native routing data")
+    }
+
+    fun plan(): RouteResult? = null
 }
 
+/**
+ * Placeholder pod lokalny graf paczki. Sam fakt posiadania PMTiles/search.db
+ * nie oznacza jeszcze, że routing działa.
+ */
 class PackGraphRoutingProvider : OfflineRoutingProvider {
-    override val id: String = "pack-graph"
-    /** false, dopóki aktywność nie poda grafu paczki. Sam plik nie liczy trasy. */
-    override val available: Boolean = false
+    val id: String = "pack-graph"
+    val available: Boolean = false
 
-    fun plan(): String? = null
+    override fun route(from: GeoPoint, to: GeoPoint, mode: TravelMode): RouteResult {
+        error("Offline routing graph is not connected")
+    }
+
+    fun plan(): RouteResult? = null
 }

@@ -13,21 +13,10 @@ android {
         versionCode = 4
         versionName = "0.4.0"
     }
-    signingConfigs {
-        create("release") {
-            storeFile = file("keystore.jks")
-            storePassword = "siatka2026"
-            keyAlias = "siatka"
-            keyPassword = "siatka2026"
-        }
-    }
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("release")
-        }
-        debug {
-            signingConfig = signingConfigs.getByName("release")
+            // Release signing is supplied by the release pipeline, never committed to source.
         }
     }
     compileOptions {
@@ -51,4 +40,5 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
     implementation("androidx.core:core-ktx:1.13.1")
+    testImplementation("junit:junit:4.13.2")
 }
